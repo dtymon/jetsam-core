@@ -1,4 +1,9 @@
 {
+  "name": "@jetsam/core",
+  "version": "1.0.0",
+  "description": "jetsam - Provides core functionality required by the jetsam platform",
+  "repository": "github:dtymon/jetsam-core",
+  "bugs": "https://github.com/dtymon/jetsam-core/issues",
   "author": "David Tymon",
   "license": "MIT",
   "keywords": [
@@ -25,7 +30,11 @@
   },
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./time": "./dist/time/index.js",
+    "./time/*": "./dist/time/*.js",
+    "./types": "./dist/types/index.js",
+    "./types/*": "./dist/types/*.js"
   },
   "scripts": {
     "build": "yarn clean && yarn compile && yarn build:dist",
@@ -41,5 +50,11 @@
     "pre-commit": "yarn build && yarn test && yarn lint && yarn jetsam audit --minimum high",
     "reinstall": "rimraf node_modules yarn.lock; yarn install",
     "release": "yarn jetsam release"
+  },
+  "devDependencies": {
+    "@jetsam/tooling": "^1.1.1"
+  },
+  "dependencies": {
+    "@jetsam/third-party": "^1.0.0"
   }
 }
