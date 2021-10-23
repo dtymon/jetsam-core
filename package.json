@@ -52,9 +52,9 @@
     "release": "yarn jetsam release"
   },
   "devDependencies": {
-    "@jetsam/tooling": "^1.1.1"
+    "@jetsam/tooling": "^1.2.0"
   },
   "dependencies": {
-    "@jetsam/third-party": "^1.0.0"
+    "@jetsam/third-party": "^1.1.0"
   }
 }
