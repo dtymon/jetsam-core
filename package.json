@@ -1,6 +1,6 @@
 {
   "name": "@jetsam/core",
-  "version": "1.2.0",
+  "version": "1.1.0",
   "description": "jetsam - Provides core functionality required by the jetsam platform",
   "repository": "github:dtymon/jetsam-core",
   "bugs": "https://github.com/dtymon/jetsam-core/issues",
