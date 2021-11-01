@@ -267,3 +267,253 @@ export class MapPlus<K, V> extends Map<K, V> {
     return true;
   }
 }
+
+/**
+ * A factory for creating `MaPlus` instances
+ */
+export class MapPlusFactory {
+  /**
+   * Create an instance given an object
+   *
+   * @typeParam ItemType - the object type
+   * @param obj - the object to convert to a map
+   * @returns an map instance equivalent to the given object
+   */
+  public static fromObject<K extends keyof any, V>(obj: Record<K, V>): MapPlus<K, V> {
+    const result: MapPlus<K, V> = new MapPlus();
+    for (const key in obj) {
+      result.set(key, obj[key]);
+    }
+    return result;
+  }
+
+  /**
+   * Create an instance for an array of items, specifying the property of the
+   * items to use as the key. The given key property is expected to be unique
+   * across the items.
+   *
+   * @typeParam ItemType - the type of items stored in the array
+   * @typeParam Property - the property in the values to use as the key
+   * @param items - the items to insert into the map
+   * @param property - the name of the property to use as the key
+   * @returns a map instance containing the items keyed on the specified
+   * property
+   */
+  public static fromArray<ItemType extends {}, Property extends keyof ItemType>(
+    items: ItemType[],
+    property: Property
+  ): MapPlus<ItemType[Property], ItemType> {
+    const result: MapPlus<ItemType[Property], ItemType> = new MapPlus();
+    for (const item of items) {
+      result.set(item[property], item);
+    }
+    return result;
+  }
+
+  /**
+   * Create an instance for an array of items, specifying the property of the
+   * items to use as the key. The specified key property is removed from the
+   * items as they are inserted into the map
+   *
+   * @typeParam ItemType - the type of items stored in the array
+   * @typeParam Property - the property in the values to use as the key
+   * @param items - the items to insert into the map
+   * @param property - the name of the property to use as the key
+   * @returns a map instance containing the items keyed on the specified
+   * property with the property removed from the items
+   */
+  public static fromArrayRemovingKey<ItemType extends {}, Property extends keyof ItemType>(
+    items: ItemType[],
+    property: Property
+  ): MapPlus<ItemType[Property], Omit<ItemType, Property>> {
+    const result: MapPlus<ItemType[Property], Omit<ItemType, Property>> = new MapPlus();
+    for (const item of items) {
+      result.set(item[property], item);
+      delete item[property];
+    }
+    return result;
+  }
+
+  /**
+   * Given an array of tuples, where a tuple is stored as an object with two
+   * properties, convert the tuples into a map by specifying the name of the key
+   * and value propertys.
+   *
+   * @typeParam TupleType - the type of tuples stored in the array
+   * @typeParam KeyProperty - the key property of the tuple
+   * @typeParam ValueProperty - the key value of the tuple
+   * @param tuples - the tuples to insert into the map
+   * @param keyProperty - the name of the property to use as the key
+   * @param valueProperty - the name of the property to use as the value
+   * @returns a map instance containing the tuples keyed on the specified
+   * property
+   */
+  public static fromTuples<
+    TupleType extends {},
+    KeyProperty extends keyof TupleType,
+    ValueProperty extends keyof TupleType
+  >(
+    tuples: TupleType[],
+    keyProperty: KeyProperty,
+    valueProperty: ValueProperty
+  ): MapPlus<TupleType[KeyProperty], TupleType[ValueProperty]> {
+    const result: MapPlus<TupleType[KeyProperty], TupleType[ValueProperty]> = new MapPlus();
+    for (const item of tuples) {
+      result.set(item[keyProperty], item[valueProperty]);
+    }
+    return result;
+  }
+
+  /**
+   * Given an array of items and function that can generate a key for the items,
+   * create an instance containing a key for each value returned by the
+   * function, with each key containing the list of items that share that value.
+   *
+   * @typeParam ItemType - the type of items stored in the array
+   * @typeParam KeyGenerator - the type of function generating the keys
+   * @param items - the items to insert into the map
+   * @param generator - the key generator function
+   * @returns a map instance containing the items grouped by the values of the
+   * generated keys
+   */
+  public static groupByFunction<ItemType extends {}, KeyGenerator extends (item: ItemType) => any>(
+    items: ItemType[],
+    generator: KeyGenerator
+  ): MapPlus<ReturnType<KeyGenerator>, ItemType[]> {
+    const result: MapPlus<ReturnType<KeyGenerator>, ItemType[]> = new MapPlus();
+    for (const item of items) {
+      const key = generator(item);
+      const group = result.get(key);
+      if (group === undefined) {
+        result.set(key, [item]);
+      } else {
+        group.push(item);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Given an array of items and the name of a property, create an instance
+   * containing a key for each value of the specified property, with each key
+   * containing the list of items that share that value.
+   *
+   * @typeParam ItemType - the type of items stored in the array
+   * @typeParam Property - the property in the values to use as the key
+   * @param items - the items to insert into the map
+   * @param property - the name of the property to use as the key
+   * @returns a map instance containing the items grouped by the values of the
+   * specified key
+   */
+  public static groupBy<ItemType extends {}, Property extends keyof ItemType>(
+    items: ItemType[],
+    property: Property
+  ): MapPlus<ItemType[Property], ItemType[]> {
+    return this.groupByFunction(items, (item: ItemType) => item[property]);
+  }
+
+  /**
+   * Given an array of items and function that can generate a key for the items,
+   * create an instance containing a key for each value returned by the
+   * function. Rather than grouping the entire item like {@link
+   * groupByFunction}, the right-side of the map is a list of values for a given
+   * property.
+   *
+   * @example
+   * Given an array of cars of the form:
+   * ```ts
+   * const cars: Car[] = [
+   *   {
+   *     "registration": "ABC-123",
+   *     "manufacturer": "Ford",
+   *     "model": "Mustang",
+   *     "colour": "Red"
+   *   }
+   * ]
+   * ```
+   * To group car registration numbers by their colour:
+   * ```ts
+   * const registrationByColour = MapPlus.groupPropertyByFunction(
+   *   cars,
+   *   (car: Car) => car.colour,
+   *   'registration'
+   * );
+   * ```
+   *
+   * @typeParam ItemType - the type of items stored in the array
+   * @typeParam KeyGenerator - the type of function generating the keys
+   * @typeParam Property - the property in the values to include in the result
+   * @param items - the items to insert into the map
+   * @param generator - the key generator function
+   * @param property - the property to include in the result
+   * @returns a map instance containing the properties grouped by the values of
+   * the generated keys
+   */
+  public static groupPropertyByFunction<
+    ItemType extends {},
+    KeyGenerator extends (item: ItemType) => any,
+    Property extends keyof ItemType
+  >(
+    items: ItemType[],
+    generator: KeyGenerator,
+    property: Property
+  ): MapPlus<ReturnType<KeyGenerator>, ItemType[Property][]> {
+    const result: MapPlus<ReturnType<KeyGenerator>, ItemType[Property][]> = new MapPlus();
+    for (const item of items) {
+      const key = generator(item);
+      const group = result.get(key);
+      if (group === undefined) {
+        result.set(key, [item[property]]);
+      } else {
+        group.push(item[property]);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * As for {@link groupPropertyByFunction} except, rather than taking a key
+   * generator function, this method takes the name of a key property.
+   *
+   * @example
+   * Given an array of cars of the form:
+   * ```ts
+   * const cars: Car[] = [
+   *   {
+   *     "registration": "ABC-123",
+   *     "manufacturer": "Ford",
+   *     "model": "Mustang",
+   *     "colour": "Red"
+   *   }
+   * ]
+   * ```
+   * To group car registration numbers by their colour:
+   * ```ts
+   * const registrationByColour = MapPlus.groupPropertyBy(
+   *   cars,
+   *   'colour',
+   *   'registration'
+   * );
+   * ```
+   *
+   * @typeParam ItemType - the type of items stored in the array
+   * @typeParam KeyProperty - property in the values to use as the key
+   * @typeParam ValueProperty - property in the values to include in the result
+   * @param items - the items to insert into the map
+   * @param keyProperty - the property to use as the key
+   * @param valueProperty - the property to include in the result
+   * @returns a map instance containing the properties grouped by the values of
+   * the keys
+   */
+  public static groupPropertyBy<
+    ItemType extends {},
+    KeyProperty extends keyof ItemType,
+    ValueProperty extends keyof ItemType
+  >(
+    items: ItemType[],
+    keyProperty: KeyProperty,
+    valueProperty: ValueProperty
+  ): MapPlus<ItemType[KeyProperty], ItemType[ValueProperty][]> {
+    return this.groupPropertyByFunction(items, (item: ItemType) => item[keyProperty], valueProperty);
+  }
+}
