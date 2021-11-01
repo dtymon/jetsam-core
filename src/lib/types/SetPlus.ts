@@ -127,8 +127,14 @@ export class SetPlus<T> extends Set<T> {
    * @returns the symmetric difference of this set with the other collections
    */
   public xor(...collections: Iterable<T>[]): SetPlus<T> {
+    // Because we need to iterate the collections twice (once for the union and
+    // once for the intersection), we need to make copies of the iterators and
+    // turn them into arrays in the process to allow us to iterate them many
+    // times. Otherwise they get exhausted after their first use.
+    const collectionsCopy: T[][] = collections.map((collection) => Array.from(collection));
+
     // Return the difference between the union and the intesection
-    return this.union(...collections).difference(this.intersection(...collections));
+    return this.union(...collectionsCopy).difference(this.intersection(...collectionsCopy));
   }
 
   /**
