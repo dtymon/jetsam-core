@@ -299,7 +299,7 @@ export class MapPlusFactory {
    * @returns a map instance containing the items keyed on the specified
    * property
    */
-  public static fromArray<ItemType extends {}, Property extends keyof ItemType>(
+  public static fromArray<ItemType extends Record<string, any>, Property extends keyof ItemType>(
     items: ItemType[],
     property: Property
   ): MapPlus<ItemType[Property], ItemType> {
@@ -322,7 +322,7 @@ export class MapPlusFactory {
    * @returns a map instance containing the items keyed on the specified
    * property with the property removed from the items
    */
-  public static fromArrayRemovingKey<ItemType extends {}, Property extends keyof ItemType>(
+  public static fromArrayRemovingKey<ItemType extends Record<string, any>, Property extends keyof ItemType>(
     items: ItemType[],
     property: Property
   ): MapPlus<ItemType[Property], Omit<ItemType, Property>> {
@@ -349,7 +349,7 @@ export class MapPlusFactory {
    * property
    */
   public static fromTuples<
-    TupleType extends {},
+    TupleType extends Record<string, any>,
     KeyProperty extends keyof TupleType,
     ValueProperty extends keyof TupleType
   >(
@@ -376,7 +376,7 @@ export class MapPlusFactory {
    * @returns a map instance containing the items grouped by the values of the
    * generated keys
    */
-  public static groupByFunction<ItemType extends {}, KeyGenerator extends (item: ItemType) => any>(
+  public static groupByFunction<ItemType extends Record<string, any>, KeyGenerator extends (item: ItemType) => any>(
     items: ItemType[],
     generator: KeyGenerator
   ): MapPlus<ReturnType<KeyGenerator>, ItemType[]> {
@@ -405,7 +405,7 @@ export class MapPlusFactory {
    * @returns a map instance containing the items grouped by the values of the
    * specified key
    */
-  public static groupBy<ItemType extends {}, Property extends keyof ItemType>(
+  public static groupBy<ItemType extends Record<string, any>, Property extends keyof ItemType>(
     items: ItemType[],
     property: Property
   ): MapPlus<ItemType[Property], ItemType[]> {
@@ -450,7 +450,7 @@ export class MapPlusFactory {
    * the generated keys
    */
   public static groupPropertyByFunction<
-    ItemType extends {},
+    ItemType extends Record<string, any>,
     KeyGenerator extends (item: ItemType) => any,
     Property extends keyof ItemType
   >(
@@ -506,7 +506,7 @@ export class MapPlusFactory {
    * the keys
    */
   public static groupPropertyBy<
-    ItemType extends {},
+    ItemType extends Record<string, any>,
     KeyProperty extends keyof ItemType,
     ValueProperty extends keyof ItemType
   >(
